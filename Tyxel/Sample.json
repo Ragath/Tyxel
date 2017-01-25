@@ -1,0 +1,8 @@
+﻿{
+  "Pyxel": "Sample.pyxel",
+  "Tileset": {
+    "OutputDir": "Output",
+    "Name": "Sample_Tileset",
+    "Spacing": 1
+  }
+}
