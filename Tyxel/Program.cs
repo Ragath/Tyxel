@@ -17,79 +17,72 @@ namespace Tyxel
             project.Root = Path.GetDirectoryName(Path.GetFullPath(projectPath));
 
             var pyxelPath = project.Pyxel;
-            using (var watcher = new FileSystemWatcher(Path.GetDirectoryName(Path.GetFullPath(pyxelPath)), Path.GetFileName(pyxelPath)))
+            Console.WriteLine($"Observing: {pyxelPath}");
+            using (var watcher = new Watcher(pyxelPath, filename => ProcessFile(project)))
             {
-                watcher.EnableRaisingEvents = true;
-                Console.WriteLine($"Observing: {pyxelPath}");
-                ProcessFile(project); //Initial read
                 while (true)
-                {
-                    var e = watcher.WaitForChanged(WatcherChangeTypes.Changed);
-                    {
-                        if (Path.GetFullPath(e.Name) != Path.GetFullPath(project.GetPyxelPath()))
-                            break;
-                        var sw = Stopwatch.StartNew();
-                        while (true)
-                            try
-                            {
-                                ProcessFile(project);
-                                break;
-                            }
-                            catch (IOException)
-                            {
-                                System.Threading.Thread.Sleep(10);
-                                if (sw.Elapsed > TimeSpan.FromSeconds(3))
-                                    throw;
-                            }
-                    }
-                }
+                    watcher.WaitForChange();
             }
         }
 
+
         static void ProcessFile(ProjectConfig project)
         {
-            var pyxelPath = project.GetPyxelPath();
-            Console.WriteLine($"Processing { pyxelPath}");
-            if (File.Exists(pyxelPath))
-                using (var stream = File.Open(pyxelPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            var sw = Stopwatch.StartNew();
+            while (true)
+                try
                 {
-                    using (var doc = new PyxelParser.Document(stream))
-                    {
-                        var meta = doc.MetaData.Value;
-                        var sheetLayer = meta.Canvas.Layers.Single(l => l.Value.Name.Trim().Equals("Sheet", StringComparison.InvariantCultureIgnoreCase));
-
-                        var columns = meta.Canvas.GetColumns();
-                        var rows = meta.Canvas.GetRows();
-
-                        using (var img = doc.GetImages(entry => Image.FromStream(entry.Stream)).Single(i => i.Path == $"layer{sheetLayer.Key}.png").Value)
+                    var pyxelPath = project.GetPyxelPath();
+                    Console.WriteLine($"Processing { pyxelPath}");
+                    if (File.Exists(pyxelPath))
+                        using (var stream = File.Open(pyxelPath, FileMode.Open, FileAccess.Read, FileShare.Read))
                         {
-                            Directory.CreateDirectory(Path.GetDirectoryName(project.GetTilesetImagePath()));
-                            var imgPath = project.GetTilesetImagePath();
-                            SaveSheet(project.Tileset, meta, columns, rows, img, imgPath);
+                            using (var doc = new PyxelParser.Document(stream))
+                            {
+                                var meta = doc.MetaData.Value;
+                                var sheetLayer = meta.Canvas.Layers.Single(l => l.Value.Name.Trim().Equals("Sheet", StringComparison.InvariantCultureIgnoreCase));
+
+                                var columns = meta.Canvas.GetColumns();
+                                var rows = meta.Canvas.GetRows();
+
+                                using (var img = doc.GetImages(entry => Image.FromStream(entry.Stream)).Single(i => i.Path == $"layer{sheetLayer.Key}.png").Value)
+                                {
+                                    Directory.CreateDirectory(Path.GetDirectoryName(project.GetTilesetImagePath()));
+                                    var imgPath = project.GetTilesetImagePath();
+                                    SaveSheet(project.Tileset, meta, columns, rows, img, imgPath);
+                                }
+
+                                var ts = new Tiled.Tileset()
+                                {
+                                    firstgid = 1,
+                                    Columns = columns,
+                                    ImagePath = project.Tileset.ImageFile,
+                                    imagewidth = meta.Canvas.Width,
+                                    imageheight = meta.Canvas.Height,
+                                    margin = 0,
+                                    name = project.Tileset.Name,
+                                    spacing = project.Tileset.Spacing,
+                                    TileCount = columns * rows,
+                                    tileheight = meta.Canvas.TileHeight,
+                                    tilewidth = meta.Canvas.TileWidth,
+                                    transparentcolor = null
+                                };
+                                Directory.CreateDirectory(Path.GetDirectoryName(project.GetTilesetJsonPath()));
+                                File.WriteAllText(project.GetTilesetJsonPath(), JsonConvert.SerializeObject(ts, Formatting.Indented));
+                            }
                         }
 
-                        var ts = new Tiled.Tileset()
-                        {
-                            firstgid = 1,
-                            Columns = columns,
-                            ImagePath = project.Tileset.ImageFile,
-                            imagewidth = meta.Canvas.Width,
-                            imageheight = meta.Canvas.Height,
-                            margin = 0,
-                            name = project.Tileset.Name,
-                            spacing = project.Tileset.Spacing,
-                            TileCount = columns * rows,
-                            tileheight = meta.Canvas.TileHeight,
-                            tilewidth = meta.Canvas.TileWidth,
-                            transparentcolor = null
-                        };
-                        Directory.CreateDirectory(Path.GetDirectoryName(project.GetTilesetJsonPath()));
-                        File.WriteAllText(project.GetTilesetJsonPath(), JsonConvert.SerializeObject(ts, Formatting.Indented));
-                    }
+                    break;
+                }
+                catch (IOException)
+                {
+                    System.Threading.Thread.Sleep(10);
+                    if (sw.Elapsed > TimeSpan.FromSeconds(3))
+                        throw;
                 }
         }
 
-        private static void SaveSheet(TilesetConfig output, PyxelParser.PyxelData meta, int columns, int rows, Image img, string outPath)
+        static void SaveSheet(TilesetConfig output, PyxelParser.PyxelData meta, int columns, int rows, Image img, string outPath)
         {
             if (output.Spacing == 0)
                 img.Save(outPath);

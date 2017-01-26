@@ -90,6 +90,7 @@
     <Compile Include="PyxelExtensions.cs" />
     <Compile Include="Tiled\Tileset.cs" />
     <Compile Include="Model\TilesetConfig.cs" />
+    <Compile Include="Watcher.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
