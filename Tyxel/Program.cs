@@ -12,6 +12,13 @@ namespace Tyxel
     {
         static void Main(string[] args)
         {
+            if(!args.Any())
+            {
+                Console.WriteLine("Please use this program to open a <project>.json file.");
+                Console.WriteLine("Drag & drop the *.json file onto the .exe is one way of doing so.");
+                return;
+            }
+
             var projectPath = args.Single();
             var project = JsonConvert.DeserializeObject<ProjectConfig>(File.ReadAllText(projectPath));
             project.Root = Path.GetDirectoryName(Path.GetFullPath(projectPath));
