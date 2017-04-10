@@ -94,8 +94,10 @@
     <Compile Include="Program.cs" />
     <Compile Include="Model\ProjectConfig.cs" />
     <Compile Include="ProjectExtensions.cs" />
+    <Compile Include="ProjectManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PyxelExtensions.cs" />
+    <Compile Include="PyxelProcessing.cs" />
     <Compile Include="Tiled\Tileset.cs" />
     <Compile Include="Model\TilesetConfig.cs" />
     <Compile Include="Watcher.cs" />
