@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Tyxel": {
+      "commandName": "Project",
+      "commandLineArgs": "Sample.json",
+      "workingDirectory": "../Samples/"
+    }
+  }
+}
