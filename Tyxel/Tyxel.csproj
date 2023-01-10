@@ -1,20 +1,37 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net462</TargetFramework>
-    <OutputType>exe</OutputType>
-    <OutputTypeEx>exe</OutputTypeEx>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+		<OutputType>exe</OutputType>
+		<OutputTypeEx>exe</OutputTypeEx>
+		<PackAsTool>True</PackAsTool>
+		
+		<ImplicitUsings>true</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+	
+	<PropertyGroup>
+		<Company>Daniel Sör</Company>
+		<Authors>Daniel Sör</Authors>
+		<Description>Pyxel->Tiled Converter. Observes changes in *.pyxel file and generates a Tiled-tilesheet.</Description>
+		<PackageTags>pyxel tiled converter tool</PackageTags>
+		<Copyright>Copyright 2017 (c) Daniel Sör. All rights reserved.</Copyright>
+		<PackageProjectUrl>https://github.com/Ragath/Tyxel/</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/Ragath/Tyxel/</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+	</PropertyGroup>
+	
+	<ItemGroup>
+	  <None Include="../LICENSE">
+	    <Pack>True</Pack>
+	    <PackagePath>/</PackagePath>
+	  </None>
+	</ItemGroup>
+	
+	<ItemGroup>
+		<PackageReference Include="PyxelParser.Net" Version="1.0.0" />
+		<PackageReference Include="SkiaSharp" Version="2.88.3" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="PyxelParser.Net" Version="0.8.0" />
-    <PackageReference Include="GitVersionTask" Version="4.0.0-beta0012">
-      <PrivateAssets>All</PrivateAssets>
-    </PackageReference>
-  </ItemGroup>
-
-  <Target Name="VersionInfo" AfterTargets="Build">
-    <Message Text="Version: $(GitVersion_SemVer)" Importance="high" />
-  </Target>
-  
 </Project>

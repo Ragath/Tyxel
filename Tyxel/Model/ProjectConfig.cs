@@ -1,16 +1,15 @@
-﻿using Newtonsoft.Json;
+﻿namespace Tyxel.Model;
 
-namespace Tyxel.Model
+public class ProjectConfig : IJsonOnDeserialized, IJsonOnDeserializing
 {
-    [JsonConverter(typeof(ProjectConfigConverter))]
-    public class ProjectConfig
-    {
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        public int Version { get; set; } = ProjectConfigConverter.Migrations.Count;
-        public string Pyxel { get; set; }
-        public TilesetConfig Tileset { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public int Version { get; set; } = Migrations.CurrentVersion;
+    public string Pyxel { get; set; } = null!;
+    public TilesetConfig Tileset { get; set; } = null!;
 
-        [JsonIgnore]
-        public string Root { get; set; }
-    }
+    [JsonIgnore]
+    public string? Root { get; set; }
+
+    public void OnDeserialized() => Migrations.ApplyMigrations(this);
+    public void OnDeserializing() => Version = default;
 }
